@@ -4,56 +4,53 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build-test-deploy:
+  build-test-push:
     runs-on: ubuntu-latest
 
-    services:
-      mongo:
-        image: mongo:6
-        ports:
-          - 27017:27017
-      rabbitmq:
-        image: rabbitmq:3-management
-        ports:
-          - 5672:5672
-          - 15672:15672
-
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
+      # 3. Install dependencies cho từng service
       - name: Install dependencies
         run: |
           cd auth && npm install
           cd ../product && npm install
           cd ../order && npm install
+          cd ../api-gateway && npm install
 
+      # 4. Run tests
       - name: Run tests
         run: |
           cd auth && npm test || echo "No test script"
           cd ../product && npm test || echo "No test script"
           cd ../order && npm test || echo "No test script"
+          cd ../api-gateway && npm test || echo "No test script"
 
-      - name: Build Docker images
-        run: |
-          docker build -t auth ./auth
-          docker build -t product ./product
-          docker build -t order ./order
+      # 5. Login Docker Hub (dùng secrets)
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Deploy (local test)
+      # 6. Build và push Docker images
+      - name: Build & Push Docker images
         run: |
-          docker stop auth product order || true
-          docker rm auth product order || true
-          docker run -d --name auth -p 4001:4001 auth
-          docker run -d --name product -p 4002:4002 product
-          docker run -d --name order -p 4003:4003 order
+          docker build -t hieucd61745/auth:latest ./auth
+          docker push hieucd61745/auth:latest
+          docker build -t hieucd61745/product:latest ./product
+          docker push hieucd61745/product:latest
+          docker build -t hieucd61745/order:latest ./order
+          docker push hieucd61745/order:latest
+          docker build -t hieucd61745/api-gateway:latest ./api-gateway
+          docker push hieucd61745/api-gateway:latest
