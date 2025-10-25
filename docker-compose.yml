@@ -1,0 +1,94 @@
+services:
+  # MongoDB
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - ecommerce-net
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ecommerce-net
+
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "4000:4000"
+    depends_on:
+      - auth
+      - product
+      - order
+    environment:
+      - PORT=4000
+      - AUTH_SERVICE_URL=http://auth:4001
+      - PRODUCT_SERVICE_URL=http://product:4002
+      - ORDER_SERVICE_URL=http://order:4003
+      - JWT_SECRET=mysecretkey123
+    networks:
+      - ecommerce-net
+
+  # Auth Service
+  auth:
+    build: ./auth
+    container_name: auth
+    ports:
+      - "4001:4001"
+    environment:
+      - MONGODB_AUTH_URI=mongodb://mongo:27017/authdb
+      - JWT_SECRET=mysecretkey123
+      - PORT=4001
+    depends_on:
+      - mongo
+    networks:
+      - ecommerce-net
+
+  # Product Service
+  product:
+    build: ./product
+    container_name: product
+    ports:
+      - "4002:4002"
+    environment:
+      - MONGODB_PRODUCT_URI=mongodb://mongo:27017/productdb
+      - JWT_SECRET=mysecretkey123
+      - PORT=4002
+      - IS_DOCKER=true
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - ecommerce-net
+
+  # Order Service
+  order:
+    build: ./order
+    container_name: order
+    ports:
+      - "4003:4003"
+    environment:
+      - MONGODB_ORDER_URI=mongodb://mongo:27017/orderdb
+      - PORT=4003
+      - IS_DOCKER=true
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - ecommerce-net
+
+networks:
+  ecommerce-net:
+
+volumes:
+  mongo-data:
