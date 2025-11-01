@@ -1,4 +1,15 @@
-const Product = require("../models/product");
+const mongoose = require("mongoose");
+
+/**
+ * Class that contains the business logic for the product repository interacting with the product model
+ */
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+});
+
+const Product = mongoose.model("Product", productSchema);
 
 class ProductsRepository {
   async create(product) {

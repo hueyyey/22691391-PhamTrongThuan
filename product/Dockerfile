@@ -1,7 +1,20 @@
-FROM node:18
+# Base image
+FROM node:18-alpine
+
+# Set working directory
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
+
+# Copy source code
 COPY . .
-EXPOSE 4002
-CMD ["npm", "start"]
+
+# Expose port (sẽ tùy chỉnh cho từng service)
+EXPOSE 3001
+
+# Start service
+CMD ["node", "index.js"]
