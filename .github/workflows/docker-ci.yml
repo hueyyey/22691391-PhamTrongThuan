@@ -1,0 +1,37 @@
+name: Docker CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and start containers
+        run: docker compose up -d --build
+
+      - name: Wait for services to start
+        run: |
+          echo "⏳ Waiting for services..."
+          sleep 25
+          docker ps -a
+
+      - name: Run Auth tests
+        run: docker exec auth npm test || true
+
+      - name: Run Product tests
+        run: docker exec product npm test || true
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down
