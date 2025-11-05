@@ -8,8 +8,10 @@ const productController = new ProductController();
 router.post("/", isAuthenticated, productController.createProduct);
 router.post("/buy", isAuthenticated, productController.createOrder);
 router.get("/", isAuthenticated, productController.getProducts);
-
 router.get("/:id", isAuthenticated, productController.getID);
 // router.get("/:id", isAuthenticated, productController.getID);
 
-module.exports = router;
+// router.get("/:id", isAuthenticated, productController.getID);
+// router.get("/:id", isAuthenticated, productController.getID);
+
+module.exports = router;    

@@ -99,11 +99,18 @@ class ProductController {
       res.status(500).json({ message: "Server error" });
     }
   }
-
-  async getID(req, res, next){
-    const products = await Product.findById(req.params.id);
+  async getID(res,req,next){
+    const products =await Product.findById(req.params.id);
     res.status(200).json(products);
   }
+  // async getID( res,req,next){
+  //   const products= await Product.findById(req.params.ids);
+  //   res.status(200).json(products);
+  // }
+  // async getID(req, res, next){
+  //   const products = await Product.findById(req.params.id);
+  //   res.status(200).json(products);
+  // }
 // // cau 8
 //     async getID(req, res, next) {
 //       const products = await Product.findById(req.params.id);
