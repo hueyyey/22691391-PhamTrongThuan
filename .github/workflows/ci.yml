@@ -38,22 +38,18 @@ jobs:
 
       - name: Tag & Push images to Docker Hub
         run: |
-          # AUTH
-          docker tag 22728851-hieucd61745-eproject-auth:latest \
-            hieucd61745/22728851_hieucd61745_eproject:auth-latest
-          docker push hieucd61745/22728851_hieucd61745_eproject:auth-latest
+          docker tag eproject-phase-1-auth:latest \
+            hieucd61745/eproject-phase-1-auth:latest
+          docker push hieucd61745/eproject-phase-1-auth:latest
 
-          # PRODUCT
-          docker tag 22728851-hieucd61745-eproject-product:latest \
-            hieucd61745/22728851_hieucd61745_eproject:product-latest
-          docker push hieucd61745/22728851_hieucd61745_eproject:product-latest
+          docker tag eproject-phase-1-product:latest \
+            hieucd61745/eproject-phase-1-product:latest
+          docker push hieucd61745/eproject-phase-1-product:latest
 
-          # ORDER
-          docker tag 22728851-hieucd61745-eproject-order:latest \
-            hieucd61745/22728851_hieucd61745_eproject:order-latest
-          docker push hieucd61745/22728851_hieucd61745_eproject:order-latest
+          docker tag eproject-phase-1-order:latest \
+            hieucd61745/eproject-phase-1-order:latest
+          docker push hieucd61745/eproject-phase-1-order:latest
 
-          # API-GATEWAY
-          docker tag 22728851-hieucd61745-eproject-api-gateway:latest \
-            hieucd61745/22728851_hieucd61745_eproject:api-gateway-latest
-          docker push hieucd61745/22728851_hieucd61745_eproject:api-gateway-latest
+          docker tag eproject-phase-1-api-gateway:latest \
+            hieucd61745/eproject-phase-1-api-gateway:latest
+          docker push hieucd61745/eproject-phase-1-api-gateway:latest
