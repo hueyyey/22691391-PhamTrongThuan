@@ -7,9 +7,7 @@ Mã sinh viên: 22691391
 
 Môn học: E-Project
 
-Giảng viên hướng dẫn: (điền tên giảng viên)
 
-Lớp: (điền lớp học)
 
 2️⃣ Hệ thống giải quyết vấn đề gì?
 
