@@ -15,7 +15,6 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # Tạo file .env trống để docker compose không bị lỗi khi đọc env_file
       - name: Create env files (for build)
         run: |
           mkdir -p auth product order
