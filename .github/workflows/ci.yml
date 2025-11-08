@@ -21,14 +21,11 @@ jobs:
   deploy:
     name: Deploy to Docker Hub
     runs-on: ubuntu-latest
-    needs: build  # chỉ deploy khi build ok
+    needs: build   # chỉ deploy khi build ok
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
-
-      - name: Build images for deployment
-        run: docker compose build
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -36,20 +33,8 @@ jobs:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERTOKEN }}
 
-      - name: Tag & Push images to Docker Hub
-        run: |
-          # AUTH
-          docker tag eproject-phase-1-auth:latest hieucd61745/auth:latest
-          docker push hieucd61745/auth:latest
+      - name: Build images for deployment
+        run: docker compose build
 
-          # PRODUCT
-          docker tag eproject-phase-1-product:latest hieucd61745/product:latest
-          docker push hieucd61745/product:latest
-
-          # ORDER
-          docker tag eproject-phase-1-order:latest hieucd61745/order:latest
-          docker push hieucd61745/order:latest
-
-          # API-GATEWAY
-          docker tag eproject-phase-1-api-gateway:latest hieucd61745/api-gateway:latest
-          docker push hieucd61745/api-gateway:latest
+      - name: Push images to Docker Hub
+        run: docker compose push

@@ -25,6 +25,7 @@ services:
 
   api-gateway:
     build: ./api-gateway
+    image: hieucd61745/api-gateway:latest
     ports:
       - "3003:3003"
     depends_on:
@@ -36,6 +37,7 @@ services:
 
   auth:
     build: ./auth
+    image: hieucd61745/auth:latest
     ports:
       - "3000:3000"
     env_file:
@@ -48,6 +50,7 @@ services:
 
   product:
     build: ./product
+    image: hieucd61745/product:latest
     ports:
       - "3001:3001"
     env_file:
@@ -60,6 +63,7 @@ services:
 
   order:
     build: ./order
+    image: hieucd61745/order:latest
     ports:
       - "3002:3002"
     env_file:
@@ -77,4 +81,3 @@ volumes:
 networks:
   backend:
     driver: bridge
-  
