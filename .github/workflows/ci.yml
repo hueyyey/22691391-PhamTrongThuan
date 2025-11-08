@@ -15,17 +15,32 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # Tạo file .env trống để docker compose không bị lỗi khi đọc env_file
+      - name: Create env files (for build)
+        run: |
+          mkdir -p auth product order
+          touch auth/.env
+          touch product/.env
+          touch order/.env
+
       - name: Build Docker images
         run: docker compose build
 
   deploy:
     name: Deploy to Docker Hub
     runs-on: ubuntu-latest
-    needs: build   # chỉ deploy khi build ok
+    needs: build
 
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+
+      - name: Create env files (for push)
+        run: |
+          mkdir -p auth product order
+          touch auth/.env
+          touch product/.env
+          touch order/.env
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
