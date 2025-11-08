@@ -1,26 +1,104 @@
-name: Node.js CI
+name: CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
 
 jobs:
-  build:
+  build-and-test:
+    name: Build and Test Microservices
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout source code
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
+    - name: Build Docker images
+      run: docker compose build
 
-      - name: Install dependencies
-        run: npm install
+    - name: Create environment variable files
+      run: |
+        # AUTH SERVICE
+        echo "MONGODB_AUTH_URI=mongodb://mongo:27017/auth" > auth/.env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> auth/.env
+        echo "LOGIN_TEST_USER=${{ secrets.LOGIN_TEST_USER }}" >> auth/.env
+        echo "LOGIN_TEST_PASSWORD=${{ secrets.LOGIN_TEST_PASSWORD }}" >> auth/.env
 
-      - name: Run tests
-        run: npm test
+        # PRODUCT SERVICE
+        echo "MONGODB_PRODUCT_URI=mongodb://mongo:27017/product" > product/.env
+        echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> product/.env
+        echo "RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672" >> product/.env
+        echo "LOGIN_TEST_USER=${{ secrets.LOGIN_TEST_USER }}" >> product/.env
+        echo "LOGIN_TEST_PASSWORD=${{ secrets.LOGIN_TEST_PASSWORD }}" >> product/.env
+
+        # ORDER SERVICE
+        echo "MONGODB_ORDER_URI=mongodb://mongo:27017/order" > order/.env
+        echo "RABBITMQ_URI=amqp://rabbitmq:5672" >> order/.env
+        echo "RABBITMQ_QUEUE=orders" >> order/.env
+        echo "PORT=3002" >> order/.env
+
+    - name: Start required containers
+      run: docker compose up -d mongo auth 
+
+    - name: check service run
+      run: |
+        docker compose ps
+        
+    # ---------------- RUN UNIT TEST ----------------
+    - name: Run unit test
+      run: |
+        echo "Running auth service tests..."
+        docker exec $(docker ps -qf "name=auth") node --max-old-space-size=256 node_modules/.bin/mocha --timeout 20000 src/test/**/*.test.js --exit || exit 1
+
+    # # Dọn RAM sau auth test
+    # - name: Restart containers for next test
+    #   run: docker compose restart mongo rabbitmq product
+
+    # - name: Wait for containers
+    #   run: sleep 45
+
+
+    # ---------------- PRODUCT TEST ----------------
+    # - name: Run unit tests (product)
+    #   run: |
+    #     echo "Running product service tests..."
+    #     docker exec $(docker ps -qf "name=product") node --max-old-space-size=256 node_modules/.bin/mocha --timeout 20000 src/test/**/*.test.js --exit || exit 1
+
+    # ---------------- CLEANUP ----------------
+    - name: Stop and remove all containers
+      if: always()
+      run: docker compose down -v
+
+  deploy:
+    name: Deploy to Docker Hub
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+
+    - name: Build images for deployment
+      run: docker compose build
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_TOKEN }}
+
+    - name: Push images to Docker Hub
+      run: |
+        docker tag 22728851-hieucd61745-eproject-auth:latest hieucd61745/22728851_hieucd61745_eproject:auth-latest
+        docker push hieucd61745/22728851_hieucd61745_eproject:auth-latest
+
+        docker tag 22728851-hieucd61745-eproject-product:latest hieucd61745/22728851_hieucd61745_eproject:product-latest
+        docker push hieucd61745/22728851_hieucd61745_eproject:product-latest
+
+        docker tag 22728851-hieucd61745-eproject-order:latest hieucd61745/22728851_hieucd61745_eproject:order-latest
+        docker push hieucd61745/22728851_hieucd61745_eproject:order-latest
+
+        docker tag 22728851-hieucd61745-eproject-api-gateway:latest hieucd61745/22728851_hieucd61745_eproject:api-gateway-latest
+        docker push hieucd61745/22728851_hieucd61745_eproject:api-gateway-latest
+
