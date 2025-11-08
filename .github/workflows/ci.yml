@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ main ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -18,12 +18,10 @@ jobs:
       - name: Build Docker images
         run: docker compose build
 
-      # Không chạy test, không chạy mocha, không docker exec gì hết
-
   deploy:
     name: Deploy to Docker Hub
     runs-on: ubuntu-latest
-    needs: build   # chỉ deploy khi build ok
+    needs: build  # chỉ deploy khi build ok
 
     steps:
       - name: Checkout source code
@@ -38,16 +36,24 @@ jobs:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERTOKEN }}
 
-      - name: Push images to Docker Hub
+      - name: Tag & Push images to Docker Hub
         run: |
-          docker tag 22728851-hieucd61745-eproject-auth:latest hieucd61745/22728851_hieucd61745_eproject:auth-latest
+          # AUTH
+          docker tag 22728851-hieucd61745-eproject-auth:latest \
+            hieucd61745/22728851_hieucd61745_eproject:auth-latest
           docker push hieucd61745/22728851_hieucd61745_eproject:auth-latest
 
-          docker tag 22728851-hieucd61745-eproject-product:latest hieucd61745/22728851_hieucd61745_eproject:product-latest
+          # PRODUCT
+          docker tag 22728851-hieucd61745-eproject-product:latest \
+            hieucd61745/22728851_hieucd61745_eproject:product-latest
           docker push hieucd61745/22728851_hieucd61745_eproject:product-latest
 
-          docker tag 22728851-hieucd61745-eproject-order:latest hieucd61745/22728851_hieucd61745_eproject:order-latest
+          # ORDER
+          docker tag 22728851-hieucd61745-eproject-order:latest \
+            hieucd61745/22728851_hieucd61745_eproject:order-latest
           docker push hieucd61745/22728851_hieucd61745_eproject:order-latest
 
-          docker tag 22728851-hieucd61745-eproject-api-gateway:latest hieucd61745/22728851_hieucd61745_eproject:api-gateway-latest
+          # API-GATEWAY
+          docker tag 22728851-hieucd61745-eproject-api-gateway:latest \
+            hieucd61745/22728851_hieucd61745_eproject:api-gateway-latest
           docker push hieucd61745/22728851_hieucd61745_eproject:api-gateway-latest
